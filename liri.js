@@ -38,7 +38,11 @@ function getTweets(username){
             console.log("Something has gone wrong.");
         }
         for(i=0; i<20; i++){
-            console.log(tweets[i].text);
+            //if the twitter account doesnt have 20 tweets - do nothing
+            if(tweets[i] != 'undefined'){
+                console.log(tweets[i].text);
+            }
+            
         }
     });
 }
