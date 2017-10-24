@@ -29,11 +29,17 @@ var nodeArgs = process.argv;
 
 // the command will be the first thing the user types in the command console. 
 var command = nodeArgs[2];
+var searchQuery = "";
 
 function makeStringFromInput(){
-    for(i=3; i<nodeArgs.length; i++){
-        
-    }
+    for (var i = 3; i < nodeArgs.length; i++) {
+          if (i > 3 && i < nodeArgs.length) {
+            searchQuery = searchQuery + "+" + nodeArgs[i];
+          }
+          else {
+            searchQuery += nodeArgs[i];
+          }
+        }
 }
 
 //function that gets tweets 
@@ -58,8 +64,9 @@ function getSpotifyInformation(querySong){
           return console.log('Error occurred: ' + err);
         }
        
-      console.log(data); 
+      console.log(data.tracks.items);
       });
+}
 
 function getMovieInfo(){
     // need to use request here. 
@@ -73,9 +80,9 @@ if(command === "my-tweets"){
 else if(command === "spotify-this-song"){
     // get the song name the user entered and put it as a parameter. 
 
+    makeStringFromInput();
 
-
-    getSpotifyInformation();
+    getSpotifyInformation(searchQuery);
 }
 
 else if(command === "movie-this"){
