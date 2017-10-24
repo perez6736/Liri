@@ -13,6 +13,9 @@ var access_token_secret = keys.twitterKeys.access_token_secret;
 var clientID = keys.spotifyKeys.clientid;
 var clientSecret = keys.spotifyKeys.client_secret;
 
+//OMDB keys 
+var omdbAPIKey = keys.OMDBKeys.APIKey;
+
 var spotify = new Spotify({
     id: clientID,
     secret: clientSecret
@@ -31,6 +34,7 @@ var nodeArgs = process.argv;
 var command = nodeArgs[2];
 var searchQuery = "";
 
+// to make the string from multi word inputs becasue process.argv is a pain. 
 function makeStringFromInput(){
     for (var i = 3; i < nodeArgs.length; i++) {
           if (i > 3 && i < nodeArgs.length) {
@@ -58,18 +62,51 @@ function getTweets(username){
     });
 }
 
+
+
 function getSpotifyInformation(querySong){
     spotify.search({ type: 'track', query: querySong }, function(err, data) {
-        if (err) {
+        if (err) { //check for errors 
           return console.log('Error occurred: ' + err);
         }
-       
-      console.log(data.tracks.items);
-      });
+        
+        // return the first 20 results 
+        for(i=0; i<20; i++){
+            var artists = []; // make an array for songs with multiple artists 
+            for(j=0; j<data.tracks.items[i].artists.length; j++){
+                // put the artists in the array
+                artists.push(data.tracks.items[i].artists[j].name);
+            }
+            console.log("Song name: " + data.tracks.items[i].name); //name of song
+            console.log("Artists: " + artists.join(', ')); //artists
+            console.log("Album: " + data.tracks.items[i].album.name); //album name 
+            if(data.tracks.items[i].preview_url == null){ //check to see if song has preview 
+                console.log("Preview link: Sorry no preview link available"); //no preview 
+            }
+            else{
+                console.log("Preview link: " + data.tracks.items[i].preview_url); //preview 
+            }
+            console.log(" "); //line break 
+        } 
+    });
 }
 
-function getMovieInfo(){
+function getMovieInfo(movieName){
+    var baseURL = "http://www.omdbapi.com/?apikey=" + omdbAPIKey + "&";
+    var queryURL = baseURL + "t=" + movieName;
+
+// need to put plus signs for spaces. 
+
     // need to use request here. 
+    // * Title of the movie.
+    // * Year the movie came out.
+    // * IMDB Rating of the movie.
+    // * Rotten Tomatoes Rating of the movie.
+    // * Country where the movie was produced.
+    // * Language of the movie.
+    // * Plot of the movie.
+    // * Actors in the movie.
+
 }
 
 //twitter part of hw
@@ -81,7 +118,10 @@ else if(command === "spotify-this-song"){
     // get the song name the user entered and put it as a parameter. 
 
     makeStringFromInput();
-
+    //if user doesnt search a song default to The Sign 
+    if(searchQuery.trim() === ""){
+        searchQuery = "The Sign";
+    }
     getSpotifyInformation(searchQuery);
 }
 
