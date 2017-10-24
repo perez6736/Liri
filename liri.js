@@ -3,6 +3,7 @@ var inquirer = require('inquirer');
 var Twitter = require('twitter');
 var Spotify = require('node-spotify-api');
 var request = require('request');
+var fs = require('fs');
 
 // twitter keys 
 var consumer_key = keys.twitterKeys.consumer_key;
@@ -71,6 +72,7 @@ function getSpotifyInformation(querySong){
           return console.log('Error occurred: ' + err);
         }
         
+        console.log(querySong);
         // return the first 20 results 
         var spotifyData = data.tracks;
         for(i=0; i<20; i++){
@@ -108,7 +110,18 @@ function getMovieInfo(movieName){
         // get all the infos. 
         console.log("Title: " + omdbData.Title);
         console.log("IMDB rating: " + omdbData.imdbRating);
-        console.log("Rotten Tomatoes rating: " + omdbData.Ratings[1].Value);
+
+        // So not all movies and stuff return a rotten Tomatos rating 
+        for(i=0; i<omdbData.Ratings.length; i++){ //need to loop through the ratings array 
+            for(var prop in omdbData.Ratings[i]){ //then loop through each object at each index of the array 
+                if(prop === "Source"){ //find the source property
+                    if(omdbData.Ratings[i].Source === "Rotten Tomatoes"){ //see if it matches rotten tomatoes 
+                        console.log("Rotten Tomatoes rating: " + omdbData.Ratings[1].Value); //then console log it
+                    }
+                }
+            }
+        }
+
         console.log("Country: " + omdbData.Country);
         console.log("Language: " + omdbData.Language);
         console.log("Plot: " + omdbData.Plot);
@@ -117,13 +130,8 @@ function getMovieInfo(movieName){
       });
 
 }
-
-//twitter part of hw
-if(command === "my-tweets"){
-    getTweets('dpereztwitbot');
-}
-
-else if(command === "spotify-this-song"){
+// this is the command for spotify
+function spotifyCommand(){
     // get the song name the user entered and put it as a parameter. 
 
     makeStringFromInput();
@@ -134,16 +142,59 @@ else if(command === "spotify-this-song"){
     getSpotifyInformation(searchQuery);
 }
 
-else if(command === "movie-this"){
+function movieThisCommand(){
+    
+        makeStringFromInput();
+        //if no search is entered then search for mr.nobody 
+        if(searchQuery.trim() === ""){
+            searchQuery = "Mr.+Nobody";
+        }
+        getMovieInfo(searchQuery);
+}
 
-    makeStringFromInput();
-    //if no search is entered then search for mr.nobody 
-    if(searchQuery.trim() === ""){
-        searchQuery = "Mr.+Nobody";
-    }
-    getMovieInfo(searchQuery);
+function readRandomTxt(){
+    var randomTxt = []; //empty array to store some usefull stuff from the text file 
+    // read the file
+    fs.readFile("random.txt","utf8", function(err, data) {
+        if(err){
+            console.log(err);
+        }
+        randomTxt = data.split(","); //split the string and make an array 
+        
+        if (randomTxt[0] === "spotify-this-song"){
+            searchQuery = randomTxt[1];
+            spotifyCommand();
+        }
+
+        else if(randomTxt[0] === "movie-this"){
+            searchQuery = randomTxt[1];
+            movieThisCommand();
+        }
+
+        else if(randomTxt[0] === "my-tweets"){
+           getTweets(randomTxt[1]);
+        }
+
+        else{
+            console.log("The random.txt file doesnt have a valid command.")
+        }
+    });
+}
+
+//twitter part of hw
+if(command === "my-tweets"){
+    getTweets('dpereztwitbot');
+}
+
+else if(command === "spotify-this-song"){
+    spotifyCommand();
+}
+
+else if(command === "movie-this"){
+    movieThisCommand();
 }
 
 else if(command === "do-what-it-says"){
-    // make a function that will read the random.txt file and then do stuff with that. 
+    // make a function that will read the random.txt file and then do stuff with that.
+    readRandomTxt();
 }
