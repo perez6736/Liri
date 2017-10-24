@@ -99,6 +99,7 @@ function getMovieInfo(movieName){
     //build a search URL to pass into request function 
     var baseURL = "http://www.omdbapi.com/?apikey=" + omdbAPIKey + "&";
     var queryURL = baseURL + "t=" + movieName;
+    var rottenTomatoes = false; 
 
     request(queryURL, function (error, response, body) {
         if(response.statusCode != 200){ //if the status is not 200 then print the status code and the error. 
@@ -113,13 +114,13 @@ function getMovieInfo(movieName){
 
         // So not all movies and stuff return a rotten Tomatos rating 
         for(i=0; i<omdbData.Ratings.length; i++){ //need to loop through the ratings array 
-            for(var prop in omdbData.Ratings[i]){ //then loop through each object at each index of the array 
-                if(prop === "Source"){ //find the source property
-                    if(omdbData.Ratings[i].Source === "Rotten Tomatoes"){ //see if it matches rotten tomatoes 
-                        console.log("Rotten Tomatoes rating: " + omdbData.Ratings[1].Value); //then console log it
-                    }
-                }
+            if(omdbData.Ratings[i].Source === "Rotten Tomatoes"){ //see if it matches rotten tomatoes 
+                console.log("Rotten Tomatoes rating: " + omdbData.Ratings[1].Value); //then console log it
+                rottenTomatoes = true;
             }
+        }
+        if(!rottenTomatoes){
+            console.log("Rotten Tomatoes rating: Not Available");
         }
 
         console.log("Country: " + omdbData.Country);
@@ -172,7 +173,12 @@ function readRandomTxt(){
         }
 
         else if(randomTxt[0] === "my-tweets"){
-           getTweets(randomTxt[1]);
+            var cleanedUsername = randomTxt[1].trim(); //remove spaces
+            // need to check if first and last spot is a quote and then remove them if it is
+            if(cleanedUsername.charAt(0) === '"' && cleanedUsername.charAt(cleanedUsername.length === '"')){
+                cleanedUsername = cleanedUsername.slice(1, -1); //remove quotes 
+            }
+            getTweets(cleanedUsername);
         }
 
         else{
