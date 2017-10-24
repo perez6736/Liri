@@ -27,8 +27,14 @@ var client = new Twitter({
 
 var nodeArgs = process.argv;
 
-// the command will be the firsdt thing the user types in the command console. 
+// the command will be the first thing the user types in the command console. 
 var command = nodeArgs[2];
+
+function makeStringFromInput(){
+    for(i=3; i<nodeArgs.length; i++){
+        
+    }
+}
 
 //function that gets tweets 
 function getTweets(username){
@@ -39,20 +45,24 @@ function getTweets(username){
         }
         for(i=0; i<20; i++){
             //if the twitter account doesnt have 20 tweets - do nothing
-            if(tweets[i] != 'undefined'){
+            if(typeof(tweets[i]) != 'undefined'){
                 console.log(tweets[i].text);
             }
-            
         }
     });
 }
 
-function getSpotifyInformation(){
-
-}
+function getSpotifyInformation(querySong){
+    spotify.search({ type: 'track', query: querySong }, function(err, data) {
+        if (err) {
+          return console.log('Error occurred: ' + err);
+        }
+       
+      console.log(data); 
+      });
 
 function getMovieInfo(){
-
+    // need to use request here. 
 }
 
 //twitter part of hw
@@ -61,6 +71,10 @@ if(command === "my-tweets"){
 }
 
 else if(command === "spotify-this-song"){
+    // get the song name the user entered and put it as a parameter. 
+
+
+
     getSpotifyInformation();
 }
 
