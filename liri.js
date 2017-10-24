@@ -72,7 +72,6 @@ function getSpotifyInformation(querySong){
           return console.log('Error occurred: ' + err);
         }
         
-        console.log(querySong);
         // return the first 20 results 
         var spotifyData = data.tracks;
         for(i=0; i<20; i++){
