@@ -2,6 +2,7 @@ var keys = require("./keys.js");
 var inquirer = require('inquirer');
 var Twitter = require('twitter');
 var Spotify = require('node-spotify-api');
+var request = require('request');
 
 // twitter keys 
 var consumer_key = keys.twitterKeys.consumer_key;
@@ -63,7 +64,7 @@ function getTweets(username){
 }
 
 
-
+// function that takes in a song and uses the spotify npm to search for a song. 
 function getSpotifyInformation(querySong){
     spotify.search({ type: 'track', query: querySong }, function(err, data) {
         if (err) { //check for errors 
@@ -71,20 +72,21 @@ function getSpotifyInformation(querySong){
         }
         
         // return the first 20 results 
+        var spotifyData = data.tracks;
         for(i=0; i<20; i++){
             var artists = []; // make an array for songs with multiple artists 
-            for(j=0; j<data.tracks.items[i].artists.length; j++){
+            for(j=0; j<spotifyData.items[i].artists.length; j++){
                 // put the artists in the array
-                artists.push(data.tracks.items[i].artists[j].name);
+                artists.push(spotifyData.items[i].artists[j].name);
             }
-            console.log("Song name: " + data.tracks.items[i].name); //name of song
+            console.log("Song name: " + spotifyData.items[i].name); //name of song
             console.log("Artists: " + artists.join(', ')); //artists
-            console.log("Album: " + data.tracks.items[i].album.name); //album name 
-            if(data.tracks.items[i].preview_url == null){ //check to see if song has preview 
+            console.log("Album: " + spotifyData.items[i].album.name); //album name 
+            if(spotifyData.items[i].preview_url == null){ //check to see if song has preview 
                 console.log("Preview link: Sorry no preview link available"); //no preview 
             }
             else{
-                console.log("Preview link: " + data.tracks.items[i].preview_url); //preview 
+                console.log("Preview link: " + spotifyData.items[i].preview_url); //preview 
             }
             console.log(" "); //line break 
         } 
@@ -92,20 +94,27 @@ function getSpotifyInformation(querySong){
 }
 
 function getMovieInfo(movieName){
+    //build a search URL to pass into request function 
     var baseURL = "http://www.omdbapi.com/?apikey=" + omdbAPIKey + "&";
     var queryURL = baseURL + "t=" + movieName;
 
-// need to put plus signs for spaces. 
+    request(queryURL, function (error, response, body) {
+        if(response.statusCode != 200){ //if the status is not 200 then print the status code and the error. 
+            console.log('statusCode:', response && response.statusCode);
+            console.log('error:', error);
+        }
+        var omdbData = JSON.parse(body); //need to parse the json to an object in order to grab the info i want. 
 
-    // need to use request here. 
-    // * Title of the movie.
-    // * Year the movie came out.
-    // * IMDB Rating of the movie.
-    // * Rotten Tomatoes Rating of the movie.
-    // * Country where the movie was produced.
-    // * Language of the movie.
-    // * Plot of the movie.
-    // * Actors in the movie.
+        // get all the infos. 
+        console.log("Title: " + omdbData.Title);
+        console.log("IMDB rating: " + omdbData.imdbRating);
+        console.log("Rotten Tomatoes rating: " + omdbData.Ratings[1].Value);
+        console.log("Country: " + omdbData.Country);
+        console.log("Language: " + omdbData.Language);
+        console.log("Plot: " + omdbData.Plot);
+        console.log("Actors: " + omdbData.Actors);
+        
+      });
 
 }
 
@@ -126,9 +135,15 @@ else if(command === "spotify-this-song"){
 }
 
 else if(command === "movie-this"){
-    getMovieInfo();
+
+    makeStringFromInput();
+    //if no search is entered then search for mr.nobody 
+    if(searchQuery.trim() === ""){
+        searchQuery = "Mr.+Nobody";
+    }
+    getMovieInfo(searchQuery);
 }
 
 else if(command === "do-what-it-says"){
-    // do whatever command is in the text 
+    // make a function that will read the random.txt file and then do stuff with that. 
 }
